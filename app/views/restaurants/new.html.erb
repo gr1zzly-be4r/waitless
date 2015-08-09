@@ -1,0 +1,85 @@
+<div class="center jumbotron">
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <h3>Once you input the restaurant's name, the select menu below will be populated with addresses.</h3>
+      <div>
+        <select id="address_area">
+          <option></option>
+        </select>
+      </div>
+      <%= form_for(@restaurant) do |f| %>
+        <%= render "shared/error_messages" %>
+
+        <%= f.label :name %>
+        <%= f.text_field :name, class: "form-control" %>
+
+        <%= f.label :wait %>
+        <%= f.number_field :wait, :step => 0.25, class: "form-control" %>
+
+        <%= f.label :address %>
+        <%= f.text_field :address, class: "form-control" %>
+
+        <%= f.label :city %>
+        <%= f.text_field :city, class: "form-control" %>
+
+        <%= f.label :state %>
+        <%= f.select :state, options_for_select(us_states), class: "form-control" %>
+
+        <%= f.label :zip %>
+        <%= f.text_field :zip, class: "form-control" %>
+
+        <%= f.hidden_field :lat %>
+
+        <%= f.hidden_field :lng %>
+
+        <%= f.submit "Save this restaurant!", class: "btn btn-primary" %>
+      <% end %>
+      <div id="map"></div>
+    </div>
+  </div>
+  <script type="text/javascript" charset="utf-8">
+    var coords = new google.maps.LatLng(30.2777609, -97.7534014);
+    var map = new google.maps.Map($("#map"), { center: coords, zoom: 13 });
+    var service = new google.maps.places.PlacesService(map);
+    $("#restaurant_name").change(function (e) {
+      console.log(service.textSearch({ query: $("#restaurant_name").val(), location: coords, radius: 10000 }, function (res) {
+        var select_tag = $("#address_area")[0];
+        for (var i = 0; i < res.length; i++) {
+          var option = document.createElement("option");
+          option.innerHTML = res[i].formatted_address;
+          option.id = res[i].geometry.location.A + "," + res[i].geometry.location.F
+          console.log(res);
+          select_tag.appendChild(option);
+        }
+      }));
+    });
+    
+    // function to parse the formatted addresses that are returned from the Google
+    // API call. Indices: 0 => address, 1 => city, 2=> state, 3 => zip.
+    function parse_addr(address) {
+      var info = address.split(",");
+      var state = info[2].trim().split(" ")[0];
+      info[3] = info[2].trim().split(" ")[1];
+      info[2] = state;
+      info[1] = info[1].trim();
+      console.log("returning..." + info);
+      return info;
+    }
+
+    $("#address_area").change(function (e) {
+      var address_info = parse_addr($("#address_area").val());
+      console.log(e);
+      var lat_lng = $("option").filter(function () { return this.selected; })[0].id.split(",");
+      // Set latitude and longitude
+      $("#restaurant_lat").val(lat_lng[0]);
+      $("#restaurant_lng").val(lat_lng[1]);
+      // Set the address
+      $("#restaurant_name").val($("#restaurant_name").val() + " " + address_info[0]);
+      $("#restaurant_address").val(address_info[0]);
+      $("#restaurant_city").val(address_info[1]);
+      $("#restaurant_state").val(address_info[2]);
+      $("#restaurant_zip").val(address_info[3]);
+    }); 
+
+  </script>
+</div>

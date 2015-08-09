@@ -1,0 +1,85 @@
+<div class="center jumbotron">
+  <h2>You're looking at the information for <%= @restaurant.name %></h2>
+  <p>
+  <%= @restaurant.name %> currently has a wait of <%= @restaurant.wait %> minutes. And was posted by <%= User.find(@restaurant.user_id).username %>.
+  <br>
+  <span class="upvotes-count" data-id="<%= @restaurant.id %>"><%= @restaurant.get_upvotes.size %></span> upvotes. <span class="downvotes-count" data-id="<%= @restaurant.id %>"><%= @restaurant.get_downvotes.size %></span> downvotes.
+  <% if logged_in? && current_user.id == @restaurant.user_id %>
+    <br>
+    <%= link_to "Delete this restaurant?", @restaurant, method: :delete, class: "btn btn-lg btn-primary" %>
+    <%= link_to "Edit this restaurant's info?", edit_restaurant_path(@restaurant.id), class: "btn btn-lg btn-primary" %>
+  <% else %>
+    What do you think of this restaurant?
+    <div id="button_area">
+      <% if current_user && current_user.voted_for?(@restaurant) %> 
+        <br>
+        <h1>Thank you for voting on this restaurant.</h1>
+      <% elsif current_user %>
+        <%= link_to "I like it :)", upvote_restaurant_path(@restaurant.id), class: "btn btn-lg btn-primary", id: "upvote", method: :put, remote: true %>
+        <%= link_to "I don't like it :(", downvote_restaurant_path(@restaurant.id), class: "btn btn-lg btn-primary", id: "downvote", method: :put, remote: true %>
+      <% else %>
+        <h1>You need to be logged in to cast votes on restaurant wait times.</h1>
+      <% end %>
+    </div>
+  <% end %>
+  <div id='map' style='height: 400px;'></div>
+  <!-- Comment creation area -->
+  <% if logged_in? %>
+    <%= form_for(@comment) do |f| %>
+      <%= f.label :content %>
+      <%= f.text_area :content, placeholder: "Your comment goes here", class: "form-control" %>
+
+      <%= f.hidden_field :user_id, value: current_user.id %>
+
+      <%= f.hidden_field :restaurant_id, value: @restaurant.id %>
+      
+      <%= f.submit "Submit your comment!" %>
+    <% end %>
+  <% else %>
+    <p>
+    Please log in to make a comment.
+  <% end %>
+  <div id="comments">
+    <% if !@comments.nil? %>
+      <% @comments.each do |comment| %>
+        <div class="comment">
+          <h6><%= User.find(comment.user_id).username %> <%= if (logged_in? && comment.user_id == current_user.id) then link_to("Edit", edit_comment_path(comment), class: "btn btn-primary") end %></h6>
+          <p>
+            <%= comment.content %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+<script type="text/javascript" charset="utf-8">
+  $("#upvote").on("ajax:success", function (status, data, xhr) {
+    console.log("got data " + data.id);
+    $("#upvote").blur();
+    $(".upvotes-count[data-id=" + data.id + "]").text(data.count);
+    $("#button_area").html("<h1>Thank you for voting on this restaurant.</h1>");
+    return;
+  });
+  $("#downvote").on("ajax:success", function (status, data, xhr) {
+    console.log("got data " + data.id);
+    $("#downvote").blur();
+    $(".downvotes-count[data-id=" + data.id + "]").text(data.count);
+    $("#button_area").html("<h1>Thank you for voting on this restaurant.</h1>");
+    return;
+  });
+
+  // Google maps code
+  var handler = Gmaps.build("Google");
+  var coords = Gmaps.Google.Builders.Bound.PRIMITIVES.latLngFromPosition([<%= @restaurant.lat %>, <%= @restaurant.lng %>]);
+  handler.buildMap({ provider: { zoom: 13, maxZoom: 15, center: coords }, internal: { id: 'map' }}, function () {
+    markers = handler.addMarkers([
+        {
+          "lat": <%= @restaurant.lat %>,
+          "lng": <%= @restaurant.lng %>
+        }
+    ]);
+    handler.bounds.extendWith(markers);
+    handler.fitMapToBounds();
+  });
+
+
+</script>

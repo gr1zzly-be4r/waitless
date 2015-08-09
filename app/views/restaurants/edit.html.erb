@@ -1,0 +1,12 @@
+<div class="center jumbtron">
+  <h1>You're editing the information for <%= @restaurant.name %> please do so kindly!</h1>
+  <%= form_for(@restaurant) do |f| %>
+    <%= f.label :name %>
+    <%= f.text_field :name %>
+
+    <%= f.label :wait %>
+    <%= f.number_field :wait, :step => 0.25 %>
+
+    <%= f.submit "Update this restaurant!" %>
+  <% end %>
+</div>

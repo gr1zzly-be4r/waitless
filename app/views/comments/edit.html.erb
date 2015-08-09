@@ -1,0 +1,9 @@
+<div class="center jumbotron">
+  <h3>Editing comment id: <%= link_to "#{@comment.id}", comment_path(@comment) %></h3>
+  <%= form_for(@comment) do |f| %>
+    <%= f.label :content %>
+    <%= f.text_area :content, class: "form-control" %>
+
+    <%= f.submit "Update this comment", class: "btn btn-primary" %>
+  <% end %>
+</div>

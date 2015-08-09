@@ -1,0 +1,22 @@
+<%= hidden_field_tag :direction, params[:direction] %>
+<%= hidden_field_tag :sort, params[:sort] %>
+<table class="pretty">
+  <tr class="header">
+    <td><%= sortable "name" %></td>
+    <td><%= sortable "wait" %></td>
+    <td><%= sortable "updated_at" %></td>
+    <td>Upvotes</td>
+    <td>Downvotes</td>
+  </tr>
+  <% @restaurants.each do |restaurant| %>
+    <tr>
+      <td><%= link_to restaurant.name, restaurant %></td>
+      <td><%= restaurant.wait %></td>
+      <td><%= restaurant.updated_at %></td>
+      <td><%= restaurant.get_upvotes.size %></td>
+      <td><%= restaurant.get_downvotes.size %></td>
+    </tr>
+  <% end %>
+</table>
+<%= will_paginate @restaurants %>
+

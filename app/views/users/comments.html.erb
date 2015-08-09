@@ -1,0 +1,13 @@
+<div class="center jumbotron">
+  <h3>Your comments are below</h3>
+  <% @restaurants.each do |restaurant| %>
+    <% comments = Comment.where restaurant_id: restaurant.id %>
+    <h4>For <%= link_to "#{restaurant.name}", restaurant_path(restaurant) %></h4>
+    <% comments.each do |comment| %>
+      <div class="comment">
+        <%= comment.content %> <%= link_to "View", comment_path(comment), class: "btn btn-primary"%> <%= link_to "Edit", edit_comment_path(comment), class: "btn btn-primary" %> 
+      </div>
+    <% end %>
+  <% end %>
+    
+</div>
